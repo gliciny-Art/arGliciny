@@ -197,14 +197,10 @@ async function start() {
 
   scene.addEventListener('arReady', () => {
     document.getElementById('loading').classList.add('hidden');
-    stickers.forEach((s, i) => {
-      const idx = s.targetIndex !== undefined ? s.targetIndex : i;
-      scene.querySelectorAll('[mindar-image-target]').forEach(t => {
-        const attr = t.getAttribute('mindar-image-target') || '';
-        if (parseInt(attr.replace('targetIndex:', '').trim()) === idx) {
-          t.addEventListener('targetFound', () => showFound(s.nombre));
-        }
-      });
+    const targets = scene.querySelectorAll('[mindar-image-target]');
+    targets.forEach((t, i) => {
+      const name = stickers[i] ? stickers[i].nombre : '';
+      t.addEventListener('targetFound', () => showFound(name));
     });
   });
 
