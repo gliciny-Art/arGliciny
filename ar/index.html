@@ -4,24 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>AR Stickers</title>
+  <title>AR Frieren</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
-
-    #loading {
-      position: fixed; inset: 0; z-index: 9999;
-      background: #0d0d0d;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 20px;
-    }
-    #loading.hidden { display: none; }
-    .ring { width: 52px; height: 52px; border: 2px solid rgba(255,255,255,0.1); border-top-color: #ff3d2e; border-radius: 50%; animation: spin 0.9s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #loading p { color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
-
     #ui { position: fixed; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 28px 20px 40px; }
     .top { display: flex; align-items: center; justify-content: space-between; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3d2e; box-shadow: 0 0 10px #ff3d2e; animation: blink 2s ease-in-out infinite; }
@@ -32,19 +20,14 @@
     .tl{top:0;left:0;border-width:2px 0 0 2px} .tr{top:0;right:0;border-width:2px 2px 0 0} .bl{bottom:0;left:0;border-width:0 0 2px 2px} .br{bottom:0;right:0;border-width:0 2px 2px 0}
     .hint { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
     .bottom { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; }
-
-    #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); z-index: 200; pointer-events: none; background: rgba(0,0,0,0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 12px; padding: 10px 22px; border-radius: 100px; opacity: 0; transition: opacity 0.3s, transform 0.3s; }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
-<div id="loading"><div class="ring"></div><p>Iniciando cámara…</p></div>
-
 <div id="ui">
   <div class="top">
     <div class="dot"></div>
-    <div class="badge" id="badge">AR</div>
+    <div class="badge">Frieren</div>
   </div>
   <div class="frame">
     <div class="c tl"></div><div class="c tr"></div>
@@ -54,94 +37,49 @@
   <div class="bottom">Mantén el sticker visible</div>
 </div>
 
-<div id="toast"></div>
+<a-scene
+  mindar-image="imageTargetSrc: https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/targets.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+  color-space="sRGB"
+  renderer="colorManagement: true"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
 
-<script>
-// Calcular base URL absoluta del sitio
-const base = window.location.origin + window.location.pathname.replace('/ar/index.html', '');
-const params = new URLSearchParams(location.search);
-const colId = params.get('c');
-let toastTimer;
+  <a-assets>
+    <img id="gif0" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-01.gif" crossorigin="anonymous">
+    <img id="gif1" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-02.gif" crossorigin="anonymous">
+    <img id="gif2" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-03.gif" crossorigin="anonymous">
+    <img id="gif3" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-04.gif" crossorigin="anonymous">
+    <img id="gif4" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-05.gif" crossorigin="anonymous">
+    <img id="gif5" src="https://gliciny-art.github.io/arGliciny/assets/collections/frieren1/gifs/sticker-06.gif" crossorigin="anonymous">
+  </a-assets>
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
-}
-
-function showError(msg) {
-  document.getElementById('loading').innerHTML = `<p style="color:#ff3d2e;padding:40px;text-align:center;line-height:1.8;font-size:13px">${msg}</p>`;
-}
-
-async function setup() {
-  // 1. Cargar config con URL absoluta
-  let config;
-  try {
-    const res = await fetch(base + '/collections.json');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    config = await res.json();
-  } catch(e) {
-    showError('Error cargando collections.json<br>' + e.message);
-    return;
-  }
-
-  // 2. Encontrar colección
-  const cols = config.colecciones.filter(c => c.activa);
-  const col = colId ? cols.find(c => c.id === colId) : cols[0];
-  if (!col) { showError('Colección no encontrada: ' + colId); return; }
-
-  const stickers = col.stickers || [];
-  document.getElementById('badge').textContent = col.nombre;
-
-  // 3. Ruta absoluta al .mind
-  const mindSrc = base + '/' + (col.mindFile || `assets/collections/${col.id}/targets.mind`);
-  console.log('MindAR src:', mindSrc);
-
-  // 4. Construir escena con ruta absoluta
-  const assetsHTML = stickers.map((s, i) =>
-    `<img id="gif${i}" src="${base}/${s.animacion}" crossorigin="anonymous">`
-  ).join('\n');
-
-  const targetsHTML = stickers.map((s, i) => {
-    const idx = s.targetIndex !== undefined ? s.targetIndex : i;
-    return `<a-entity id="target${i}" mindar-image-target="targetIndex: ${idx}">
-      <a-plane src="#gif${i}" width="${s.escala||1}" height="${s.escala||1}" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
-    </a-entity>`;
-  }).join('\n');
-
-  // 5. Insertar escena en el DOM
-  const sceneEl = document.createElement('div');
-  sceneEl.innerHTML = `
-<a-scene id="ar-scene"
-  mindar-image="imageTargetSrc: ${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
-  color-space="sRGB" renderer="colorManagement: true"
-  vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-  <a-assets timeout="60000">${assetsHTML}</a-assets>
   <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-  ${targetsHTML}
-</a-scene>`;
-  document.body.appendChild(sceneEl);
 
-  // 6. Eventos
-  const scene = document.getElementById('ar-scene');
-  scene.addEventListener('arReady', () => {
-    document.getElementById('loading').classList.add('hidden');
-    stickers.forEach((s, i) => {
-      const t = document.getElementById(`target${i}`);
-      if (t) t.addEventListener('targetFound', () => toast('✦ ' + s.nombre));
-    });
-  });
-  scene.addEventListener('arError', (e) => {
-    console.error('arError', e);
-    showError('No se pudo acceder a la cámara.<br>Permite el permiso y recarga.');
-  });
+  <a-entity mindar-image-target="targetIndex: 0">
+    <a-plane src="#gif0" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
 
-  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 20000);
-}
+  <a-entity mindar-image-target="targetIndex: 1">
+    <a-plane src="#gif1" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
 
-setup();
-</script>
+  <a-entity mindar-image-target="targetIndex: 2">
+    <a-plane src="#gif2" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
+
+  <a-entity mindar-image-target="targetIndex: 3">
+    <a-plane src="#gif3" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
+
+  <a-entity mindar-image-target="targetIndex: 4">
+    <a-plane src="#gif4" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
+
+  <a-entity mindar-image-target="targetIndex: 5">
+    <a-plane src="#gif5" width="1" height="1" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+  </a-entity>
+
+</a-scene>
+
 </body>
 </html>
