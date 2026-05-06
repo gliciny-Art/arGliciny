@@ -2,52 +2,57 @@
   "colecciones": [
     {
       "id": "frieren1",
-      "nombre": "Colección soso no frieren",
-      "descripcion": "Colección de stickers Frieren AR",
+      "nombre": "Frieren",
+      "descripcion": "Coleccion Frieren",
       "activa": true,
       "stickers": [
         {
-          "id": "sticker-01",
+          "id": "sticker-1778031851302",
           "nombre": "Sticker 1",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-01.png",
           "animacion": "assets/collections/frieren1/gifs/sticker-01.gif",
-          "escala": 1
+          "escala": 1,
+          "targetIndex": 0
         },
         {
-          "id": "sticker-02",
+          "id": "sticker-1778031906871",
           "nombre": "Sticker 2",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-02.png",
           "animacion": "assets/collections/frieren1/gifs/sticker-02.gif",
-          "escala": 1
+          "escala": 1,
+          "targetIndex": 1
         },
         {
-          "id": "sticker-03",
+          "id": "sticker-1778031932968",
           "nombre": "Sticker 3",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-03.png",
           "animacion": "assets/collections/frieren1/gifs/sticker-03.gif",
-          "escala": 1
+          "escala": 1,
+          "targetIndex": 2
         },
         {
-          "id": "sticker-04",
+          "id": "sticker-1778031951232",
           "nombre": "Sticker 4",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-04.png",
           "animacion": "assets/collections/frieren1/gifs/sticker-04.gif",
-          "escala": 2
+          "escala": 1,
+          "targetIndex": 3
         },
         {
-          "id": "sticker-05",
+          "id": "sticker-1778031965474",
           "nombre": "Sticker 5",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-05.png",
           "animacion": "assets/collections/frieren1/gifs/sticker-05.gif",
-          "escala": 1
+          "escala": 1,
+          "targetIndex": 4
         },
         {
-          "id": "sticker-1778031429928",
+          "id": "sticker-1778031980913",
           "nombre": "Sticker 6",
           "tipo": "sticker",
           "imagen_marcador": "assets/collections/frieren1/marcadores/sticker-06.png",
@@ -55,8 +60,7 @@
           "escala": 1,
           "targetIndex": 5
         }
-      ],
-      "mindFile": "assets/collections/frieren1/targets.mind"
+      ]
     }
   ]
 }
