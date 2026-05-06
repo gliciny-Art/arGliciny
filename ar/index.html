@@ -18,54 +18,23 @@
       align-items: center; justify-content: center; gap: 20px;
     }
     #loading.hidden { display: none; }
-    .ring {
-      width: 52px; height: 52px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: #ff3d2e; border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-    }
+    .ring { width: 52px; height: 52px; border: 2px solid rgba(255,255,255,0.1); border-top-color: #ff3d2e; border-radius: 50%; animation: spin 0.9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     #loading p { color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
 
-    #ui {
-      position: fixed; inset: 0; z-index: 100;
-      pointer-events: none; display: flex;
-      flex-direction: column; justify-content: space-between;
-      padding: 28px 20px 40px;
-    }
+    #ui { position: fixed; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 28px 20px 40px; }
     .top { display: flex; align-items: center; justify-content: space-between; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3d2e; box-shadow: 0 0 10px #ff3d2e; animation: blink 2s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .badge {
-      background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.7); font-size: 11px;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 6px 14px; border-radius: 100px;
-    }
-    .frame {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(240px, 60vw); aspect-ratio: 1;
-    }
+    .badge { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; }
+    .frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(240px, 60vw); aspect-ratio: 1; }
     .c { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.5); border-style: solid; }
-    .tl{top:0;left:0;border-width:2px 0 0 2px} .tr{top:0;right:0;border-width:2px 2px 0 0}
-    .bl{bottom:0;left:0;border-width:0 0 2px 2px} .br{bottom:0;right:0;border-width:0 2px 2px 0}
+    .tl{top:0;left:0;border-width:2px 0 0 2px} .tr{top:0;right:0;border-width:2px 2px 0 0} .bl{bottom:0;left:0;border-width:0 0 2px 2px} .br{bottom:0;right:0;border-width:0 2px 2px 0}
     .hint { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
     .bottom { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; }
 
-    #toast {
-      position: fixed; bottom: 90px; left: 50%;
-      transform: translateX(-50%) translateY(10px);
-      z-index: 200; pointer-events: none;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; font-size: 12px; padding: 10px 22px; border-radius: 100px;
-      opacity: 0; transition: opacity 0.3s, transform 0.3s;
-    }
+    #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); z-index: 200; pointer-events: none; background: rgba(0,0,0,0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 12px; padding: 10px 22px; border-radius: 100px; opacity: 0; transition: opacity 0.3s, transform 0.3s; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    a-scene { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
   </style>
 </head>
 <body>
@@ -87,22 +56,9 @@
 
 <div id="toast"></div>
 
-<!-- 
-  ESCENA ESTÁTICA — MindAR necesita que esto exista en el HTML desde el inicio.
-  Los GIFs y el .mind se configuran dinámicamente vía JS antes de que A-Frame arranque.
--->
-<a-scene
-  id="ar-scene"
-  mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
-  color-space="sRGB"
-  renderer="colorManagement: true"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: false">
-  <a-assets id="a-assets" timeout="30000"></a-assets>
-  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-</a-scene>
-
 <script>
+// Calcular base URL absoluta del sitio
+const base = window.location.origin + window.location.pathname.replace('/ar/index.html', '');
 const params = new URLSearchParams(location.search);
 const colId = params.get('c');
 let toastTimer;
@@ -115,80 +71,77 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+function showError(msg) {
+  document.getElementById('loading').innerHTML = `<p style="color:#ff3d2e;padding:40px;text-align:center;line-height:1.8;font-size:13px">${msg}</p>`;
+}
+
 async function setup() {
-  // 1. Cargar config
+  // 1. Cargar config con URL absoluta
   let config;
   try {
-    const res = await fetch('../collections.json');
+    const res = await fetch(base + '/collections.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     config = await res.json();
   } catch(e) {
-    document.getElementById('loading').innerHTML = '<p style="color:#ff3d2e;padding:40px;text-align:center">No se pudo cargar collections.json</p>';
+    showError('Error cargando collections.json<br>' + e.message);
     return;
   }
 
   // 2. Encontrar colección
   const cols = config.colecciones.filter(c => c.activa);
   const col = colId ? cols.find(c => c.id === colId) : cols[0];
-  if (!col) {
-    document.getElementById('loading').innerHTML = '<p style="color:#ff3d2e;padding:40px;text-align:center">Colección no encontrada</p>';
-    return;
-  }
+  if (!col) { showError('Colección no encontrada: ' + colId); return; }
 
   const stickers = col.stickers || [];
   document.getElementById('badge').textContent = col.nombre;
 
-  // 3. Actualizar src del .mind ANTES de que A-Frame procese la escena
-  const mindSrc = col.mindFile || `../assets/collections/${col.id}/targets.mind`;
-  const scene = document.getElementById('ar-scene');
-  scene.setAttribute('mindar-image', 
-    `imageTargetSrc: ${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;`
-  );
+  // 3. Ruta absoluta al .mind
+  const mindSrc = base + '/' + (col.mindFile || `assets/collections/${col.id}/targets.mind`);
+  console.log('MindAR src:', mindSrc);
 
-  // 4. Agregar assets (GIFs)
-  const assetsEl = document.getElementById('a-assets');
-  stickers.forEach((s, i) => {
-    const img = document.createElement('img');
-    img.id = `gif${i}`;
-    img.src = `../${s.animacion}`;
-    img.crossOrigin = 'anonymous';
-    assetsEl.appendChild(img);
-  });
+  // 4. Construir escena con ruta absoluta
+  const assetsHTML = stickers.map((s, i) =>
+    `<img id="gif${i}" src="${base}/${s.animacion}" crossorigin="anonymous">`
+  ).join('\n');
 
-  // 5. Agregar targets a la escena
-  stickers.forEach((s, i) => {
+  const targetsHTML = stickers.map((s, i) => {
     const idx = s.targetIndex !== undefined ? s.targetIndex : i;
+    return `<a-entity id="target${i}" mindar-image-target="targetIndex: ${idx}">
+      <a-plane src="#gif${i}" width="${s.escala||1}" height="${s.escala||1}" position="0 0 0" material="transparent:true;alphaTest:0.05;side:double"></a-plane>
+    </a-entity>`;
+  }).join('\n');
 
-    const entity = document.createElement('a-entity');
-    entity.setAttribute('mindar-image-target', `targetIndex: ${idx}`);
+  // 5. Insertar escena en el DOM
+  const sceneEl = document.createElement('div');
+  sceneEl.innerHTML = `
+<a-scene id="ar-scene"
+  mindar-image="imageTargetSrc: ${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+  color-space="sRGB" renderer="colorManagement: true"
+  vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+  <a-assets timeout="60000">${assetsHTML}</a-assets>
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  ${targetsHTML}
+</a-scene>`;
+  document.body.appendChild(sceneEl);
 
-    const plane = document.createElement('a-plane');
-    plane.setAttribute('src', `#gif${i}`);
-    plane.setAttribute('width', s.escala || 1);
-    plane.setAttribute('height', s.escala || 1);
-    plane.setAttribute('position', '0 0 0');
-    plane.setAttribute('material', 'transparent: true; alphaTest: 0.05; side: double');
-
-    entity.appendChild(plane);
-    entity.addEventListener('targetFound', () => toast('✦ ' + s.nombre));
-    scene.appendChild(entity);
-  });
-
-  // 6. Escuchar cuando AR esté listo
+  // 6. Eventos
+  const scene = document.getElementById('ar-scene');
   scene.addEventListener('arReady', () => {
     document.getElementById('loading').classList.add('hidden');
+    stickers.forEach((s, i) => {
+      const t = document.getElementById(`target${i}`);
+      if (t) t.addEventListener('targetFound', () => toast('✦ ' + s.nombre));
+    });
+  });
+  scene.addEventListener('arError', (e) => {
+    console.error('arError', e);
+    showError('No se pudo acceder a la cámara.<br>Permite el permiso y recarga.');
   });
 
-  scene.addEventListener('arError', () => {
-    document.getElementById('loading').innerHTML = 
-      '<p style="color:#ff3d2e;padding:40px;text-align:center;line-height:1.6">No se pudo acceder a la cámara.<br>Verifica los permisos y recarga.</p>';
-  });
-
-  // Fallback
-  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 15000);
+  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 20000);
 }
 
-// Esperar a que A-Frame esté disponible antes de modificar la escena
-window.addEventListener('load', setup);
+setup();
 </script>
 </body>
 </html>
