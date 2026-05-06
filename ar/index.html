@@ -4,360 +4,245 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>AR Stickers</title>
-
-  <!-- MindAR + A-Frame -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image.prod.js"></script>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
 
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500&display=swap');
-
-    :root {
-      --ink: #0d0d0d;
-      --paper: #faf7f2;
-      --accent: #ff3d2e;
-      --glass: rgba(250,247,242,0.08);
-    }
-
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: 'Space Grotesk', sans-serif;
-    }
-
-    /* ── Loading screen ── */
     #loading {
-      position: fixed; inset: 0; z-index: 100;
-      background: var(--ink);
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0d0d0d;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 28px;
-      transition: opacity 0.6s ease;
+      align-items: center; justify-content: center; gap: 24px;
     }
-    #loading.hidden { opacity: 0; pointer-events: none; }
-
-    .loader-ring {
-      width: 64px; height: 64px;
+    #loading.hidden { display: none; }
+    .ring {
+      width: 56px; height: 56px;
       border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: var(--accent);
-      border-radius: 50%;
+      border-top-color: #ff3d2e; border-radius: 50%;
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; }
 
-    #loading p {
-      color: rgba(255,255,255,0.5);
-      font-size: 13px; letter-spacing: 0.12em;
-      text-transform: uppercase;
+    #error {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: #0d0d0d; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; padding: 40px; text-align: center;
+    }
+    #error.show { display: flex; }
+    #error h2 { color: #ff3d2e; font-size: 20px; font-weight: 500; }
+    #error p { color: rgba(255,255,255,0.45); font-size: 13px; line-height: 1.6; max-width: 280px; }
+    #error button {
+      margin-top: 8px; padding: 10px 24px;
+      background: #ff3d2e; border: none; border-radius: 8px;
+      color: #fff; font-size: 12px; letter-spacing: 0.1em;
+      text-transform: uppercase; cursor: pointer;
     }
 
-    /* ── A-Frame canvas ── */
-    #ar-scene {
-      position: fixed; inset: 0;
-      width: 100% !important; height: 100% !important;
-    }
-
-    /* ── UI overlay ── */
     #ui {
-      position: fixed; inset: 0; z-index: 20;
-      pointer-events: none;
-      display: flex; flex-direction: column;
-      justify-content: space-between;
-      padding: 24px 20px 36px;
+      position: fixed; inset: 0; z-index: 100;
+      pointer-events: none; display: flex;
+      flex-direction: column; justify-content: space-between;
+      padding: 28px 20px 40px;
     }
-
-    /* Top bar */
-    .top-bar {
-      display: flex; align-items: center; justify-content: space-between;
+    .top { display: flex; align-items: center; justify-content: space-between; }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ff3d2e; box-shadow: 0 0 10px #ff3d2e;
+      animation: blink 2s ease-in-out infinite;
     }
-    .logo-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%,100% { opacity:1; transform:scale(1); }
-      50% { opacity:0.5; transform:scale(0.7); }
-    }
-    .collection-badge {
-      background: var(--glass);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.7);
-      font-size: 11px; letter-spacing: 0.1em;
-      text-transform: uppercase;
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .badge {
+      background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase;
       padding: 6px 14px; border-radius: 100px;
     }
-
-    /* Viewfinder hint */
-    .viewfinder {
-      position: absolute;
-      top: 50%; left: 50%;
+    .crosshair {
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: min(260px, 65vw);
-      aspect-ratio: 1;
+      width: min(240px, 60vw); aspect-ratio: 1;
     }
-    .vf-corner {
-      position: absolute;
-      width: 24px; height: 24px;
-      border-color: rgba(255,255,255,0.6);
-      border-style: solid;
+    .ch { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.5); border-style: solid; }
+    .tl { top:0;left:0; border-width:2px 0 0 2px; }
+    .tr { top:0;right:0; border-width:2px 2px 0 0; }
+    .bl { bottom:0;left:0; border-width:0 0 2px 2px; }
+    .br { bottom:0;right:0; border-width:0 2px 2px 0; }
+    .hint {
+      position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.35); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
     }
-    .vf-corner.tl { top:0; left:0; border-width: 2px 0 0 2px; }
-    .vf-corner.tr { top:0; right:0; border-width: 2px 2px 0 0; }
-    .vf-corner.bl { bottom:0; left:0; border-width: 0 0 2px 2px; }
-    .vf-corner.br { bottom:0; right:0; border-width: 0 2px 2px 0; }
+    .bottom { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; }
 
-    .scan-hint {
-      position: absolute;
-      bottom: -36px; left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.45);
-      font-size: 11px; letter-spacing: 0.12em;
-      text-transform: uppercase;
-      white-space: nowrap;
+    #found {
+      position: fixed; bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      z-index: 200; pointer-events: none;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; font-size: 12px; letter-spacing: 0.08em;
+      padding: 12px 24px; border-radius: 100px;
+      opacity: 0; transition: opacity 0.3s, transform 0.3s;
     }
+    #found.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* Scan line animation */
-    .scan-line {
-      position: absolute;
-      left: 2px; right: 2px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      animation: scan 2.4s ease-in-out infinite;
-      opacity: 0;
-    }
-    @keyframes scan {
-      0% { top: 0; opacity:0; }
-      10% { opacity:1; }
-      90% { opacity:1; }
-      100% { top: 100%; opacity:0; }
-    }
-
-    /* Found indicator */
-    #found-indicator {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%,-50%) scale(0);
-      z-index: 30; pointer-events: none;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
-      padding: 16px 28px;
-      color: #fff;
-      font-size: 13px; letter-spacing: 0.1em;
-      text-transform: uppercase;
-      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
-      opacity: 0;
-    }
-    #found-indicator.show {
-      transform: translate(-50%,-50%) scale(1);
-      opacity: 1;
-    }
-
-    /* Bottom hint */
-    .bottom-hint {
-      text-align: center;
-      color: rgba(255,255,255,0.25);
-      font-size: 10px; letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-
-    /* Error screen */
-    #error-screen {
-      display: none;
-      position: fixed; inset: 0; z-index: 200;
-      background: var(--ink);
-      flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 20px; padding: 40px;
-      text-align: center;
-    }
-    #error-screen.show { display: flex; }
-    #error-screen h2 { color: var(--accent); font-size: 22px; font-weight: 500; }
-    #error-screen p { color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.6; }
-    #error-screen a {
-      margin-top: 8px;
-      color: var(--paper);
-      font-size: 12px; letter-spacing: 0.1em;
-      text-transform: uppercase;
-      text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 2px;
-    }
+    a-scene { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
   </style>
 </head>
 <body>
 
-<!-- Loading -->
-<div id="loading">
-  <div class="loader-ring"></div>
-  <p>Iniciando cámara AR…</p>
+<div id="loading"><div class="ring"></div><p>Iniciando cámara…</p></div>
+
+<div id="error">
+  <h2>Algo salió mal</h2>
+  <p id="error-msg">No se pudo iniciar la cámara AR.</p>
+  <button onclick="location.reload()">Reintentar</button>
 </div>
 
-<!-- Error -->
-<div id="error-screen">
-  <h2>Cámara no disponible</h2>
-  <p>Necesitamos acceso a tu cámara para mostrar la experiencia AR. Por favor permite el acceso y recarga la página.</p>
-  <a href="javascript:location.reload()">Reintentar</a>
-</div>
-
-<!-- UI overlay -->
 <div id="ui">
-  <div class="top-bar">
-    <div class="logo-dot"></div>
-    <div class="collection-badge" id="collection-name">AR Stickers</div>
+  <div class="top">
+    <div class="live-dot"></div>
+    <div class="badge" id="col-badge">AR</div>
   </div>
-
-  <div class="viewfinder">
-    <div class="vf-corner tl"></div>
-    <div class="vf-corner tr"></div>
-    <div class="vf-corner bl"></div>
-    <div class="vf-corner br"></div>
-    <div class="scan-line"></div>
-    <div class="scan-hint">Apunta al sticker</div>
+  <div class="crosshair">
+    <div class="ch tl"></div><div class="ch tr"></div>
+    <div class="ch bl"></div><div class="ch br"></div>
+    <div class="hint">Apunta al sticker</div>
   </div>
-
-  <div class="bottom-hint">Mantén el sticker visible</div>
+  <div class="bottom">Mantén el sticker visible</div>
 </div>
 
-<!-- Found indicator -->
-<div id="found-indicator">✦ Sticker encontrado</div>
-
-<!-- A-Frame scene (built dynamically) -->
-<div id="ar-scene-container"></div>
+<div id="found"></div>
+<div id="scene-container"></div>
 
 <script>
-  // ── Helpers ──────────────────────────────────────────
-  const $ = id => document.getElementById(id);
-  const params = new URLSearchParams(location.search);
-  const collectionId = params.get('c') || null;
+const params = new URLSearchParams(location.search);
+const colId = params.get('c');
+let foundTimer;
 
-  let foundTimer;
+function showError(msg) {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error').classList.add('show');
+}
 
-  function showFound(name) {
-    const el = $('found-indicator');
-    el.textContent = `✦ ${name || 'Sticker encontrado'}`;
-    el.classList.add('show');
-    clearTimeout(foundTimer);
-    foundTimer = setTimeout(() => el.classList.remove('show'), 2000);
+function showFound(name) {
+  const el = document.getElementById('found');
+  el.textContent = '✦ ' + (name || 'Sticker detectado');
+  el.classList.add('show');
+  clearTimeout(foundTimer);
+  foundTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function start() {
+  // 1. Load scripts first
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image.prod.js');
+    await loadScript('https://aframe.io/releases/1.4.2/aframe.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js');
+  } catch(e) {
+    showError('No se pudieron cargar las librerías AR. Verifica tu conexión a internet.');
+    return;
   }
 
-  // ── Load config & build scene ─────────────────────────
-  async function init() {
-    let config;
-    try {
-      const res = await fetch('../collections.json');
-      config = await res.json();
-    } catch(e) {
-      showError('No se pudo cargar la configuración.');
-      return;
-    }
-
-    // Pick collection
-    const colecciones = config.colecciones.filter(c => c.activa);
-    const col = collectionId
-      ? colecciones.find(c => c.id === collectionId)
-      : colecciones[0];
-
-    if (!col) { showError('Colección no encontrada.'); return; }
-
-    $('collection-name').textContent = col.nombre;
-
-    const stickers = col.stickers;
-    if (!stickers || stickers.length === 0) {
-      showError('Esta colección no tiene stickers configurados.');
-      return;
-    }
-
-    buildScene(stickers, col);
+  // 2. Load config
+  let config;
+  try {
+    const res = await fetch('../collections.json');
+    config = await res.json();
+  } catch(e) {
+    showError('No se pudo cargar la configuración.');
+    return;
   }
 
-  function showError(msg) {
-    $('loading').classList.add('hidden');
-    const es = $('error-screen');
-    es.querySelector('p').textContent = msg;
-    es.classList.add('show');
-  }
+  // 3. Find collection
+  const cols = config.colecciones.filter(c => c.activa);
+  const col = colId ? cols.find(c => c.id === colId) : cols[0];
+  if (!col) { showError('Colección no encontrada.'); return; }
 
-  // ── Build A-Frame scene dynamically ──────────────────
-  function buildScene(stickers, col) {
-    // MindAR needs all targets in one .mind file per scene
-    const mindSrc = col.mindFile || stickers[0].imagen_marcador
-      .replace(/\/marcadores\/.*$/, '/targets.mind');
+  const stickers = col.stickers || [];
+  if (stickers.length === 0) { showError('Esta colección no tiene stickers.'); return; }
 
-    const container = $('ar-scene-container');
+  document.getElementById('col-badge').textContent = col.nombre;
 
-    const scene = document.createElement('a-scene');
-    scene.setAttribute('mindar-image', `imageTargetSrc: ../${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;`);
-    scene.setAttribute('color-space', 'sRGB');
-    scene.setAttribute('renderer', 'colorManagement: true, physicallyCorrectLights: true');
-    scene.setAttribute('vr-mode-ui', 'enabled: false');
-    scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
-    scene.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;';
+  const mindSrc = col.mindFile || `assets/collections/${col.id}/targets.mind`;
 
-    // Assets
-    const assets = document.createElement('a-assets');
+  // 4. Build scene HTML
+  const assetsHTML = stickers.map((s, i) =>
+    `<img id="gif${i}" src="../${s.animacion}">`
+  ).join('\n        ');
+
+  const targetsHTML = stickers.map((s, i) => {
+    const idx = s.targetIndex !== undefined ? s.targetIndex : i;
+    return `
+      <a-entity mindar-image-target="targetIndex: ${idx}">
+        <a-plane src="#gif${i}"
+          width="${s.escala || 1}" height="${s.escala || 1}"
+          position="0 0 0" rotation="0 0 0"
+          material="transparent: true; alphaTest: 0.05; side: double">
+        </a-plane>
+      </a-entity>`;
+  }).join('\n');
+
+  document.getElementById('scene-container').innerHTML = `
+    <a-scene
+      id="ar-scene"
+      mindar-image="imageTargetSrc: ../${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+      color-space="sRGB"
+      renderer="colorManagement: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false">
+      <a-assets timeout="30000">
+        ${assetsHTML}
+      </a-assets>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      ${targetsHTML}
+    </a-scene>`;
+
+  // 5. Listen for events
+  const scene = document.getElementById('ar-scene');
+
+  scene.addEventListener('arReady', () => {
+    document.getElementById('loading').classList.add('hidden');
+
+    // Attach target events
     stickers.forEach((s, i) => {
-      const img = document.createElement('img');
-      img.id = `gif-${i}`;
-      img.src = `../${s.animacion}`;
-      assets.appendChild(img);
+      const idx = s.targetIndex !== undefined ? s.targetIndex : i;
+      const targets = scene.querySelectorAll('[mindar-image-target]');
+      targets.forEach(t => {
+        const attr = t.getAttribute('mindar-image-target') || '';
+        const tIdx = parseInt(attr.replace('targetIndex:', '').trim());
+        if (tIdx === idx) {
+          t.addEventListener('targetFound', () => showFound(s.nombre));
+        }
+      });
     });
-    scene.appendChild(assets);
+  });
 
-    // Camera
-    const cam = document.createElement('a-camera');
-    cam.setAttribute('position', '0 0 0');
-    cam.setAttribute('look-controls', 'enabled: false');
-    scene.appendChild(cam);
+  scene.addEventListener('arError', () => {
+    showError('No se pudo acceder a la cámara. Verifica los permisos e intenta de nuevo.');
+  });
 
-    // Targets
-    stickers.forEach((s, i) => {
-      const target = document.createElement('a-entity');
-      target.setAttribute('mindar-image-target', `targetIndex: ${i}`);
+  // Fallback hide loading after 15s
+  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 15000);
+}
 
-      const plane = document.createElement('a-plane');
-      plane.setAttribute('src', `#gif-${i}`);
-      plane.setAttribute('position', '0 0 0');
-      plane.setAttribute('height', `${s.escala || 1}`);
-      plane.setAttribute('width', `${s.escala || 1}`);
-      plane.setAttribute('rotation', '0 0 0');
-      plane.setAttribute('material', 'transparent: true; alphaTest: 0.1;');
-
-      target.appendChild(plane);
-
-      // Events
-      target.addEventListener('targetFound', () => showFound(s.nombre));
-
-      scene.appendChild(target);
-    });
-
-    // Scene ready → hide loading
-    scene.addEventListener('arReady', () => {
-      $('loading').classList.add('hidden');
-    });
-    scene.addEventListener('arError', () => {
-      showError('No se pudo acceder a la cámara. Permite el permiso e intenta de nuevo.');
-    });
-
-    container.appendChild(scene);
-
-    // Fallback timeout
-    setTimeout(() => {
-      if (!$('loading').classList.contains('hidden')) {
-        $('loading').classList.add('hidden');
-      }
-    }, 8000);
-  }
-
-  init();
+start();
 </script>
 </body>
 </html>
