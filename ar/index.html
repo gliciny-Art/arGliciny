@@ -276,7 +276,7 @@
       return;
     }
 
-    buildScene(stickers);
+    buildScene(stickers, col);
   }
 
   function showError(msg) {
@@ -287,11 +287,9 @@
   }
 
   // ── Build A-Frame scene dynamically ──────────────────
-  function buildScene(stickers) {
+  function buildScene(stickers, col) {
     // MindAR needs all targets in one .mind file per scene
-    // Each sticker maps to an index in the compiled .mind file
-    // We use the collection's mind file
-    const mindSrc = stickers[0].imagen_marcador
+    const mindSrc = col.mindFile || stickers[0].imagen_marcador
       .replace(/\/marcadores\/.*$/, '/targets.mind');
 
     const container = $('ar-scene-container');
