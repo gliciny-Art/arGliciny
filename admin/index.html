@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — AR Stickers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --surface: #fdfaf4;
+      --ink: #1a1714;
+      --ink2: #6b6560;
+      --accent: #c8392b;
+      --accent2: #2563b8;
+      --border: #e0d9ce;
+      --tag-print: #7c3aed;
+      --tag-marca: #0369a1;
+      --tag-sticker: #c8392b;
+      --success: #15803d;
+      --r: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    aside {
+      background: var(--ink);
+      color: var(--bg);
+      padding: 32px 24px;
+      display: flex; flex-direction: column; gap: 32px;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .brand-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .brand h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 17px; font-weight: 300;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    .sidebar-section label {
+      display: block;
+      font-size: 9px; letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 12px;
+    }
+
+    .col-list { display: flex; flex-direction: column; gap: 4px; }
+    .col-item {
+      padding: 9px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: rgba(255,255,255,0.65);
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .col-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .col-item.active { background: rgba(255,255,255,0.12); color: #fff; }
+    .col-item .badge {
+      font-size: 10px;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 7px; border-radius: 100px;
+    }
+
+    .btn-new {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px; border-radius: 8px;
+      background: rgba(200,57,43,0.2);
+      border: 1px solid rgba(200,57,43,0.35);
+      color: #ff8070; font-size: 12px;
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'DM Mono', monospace;
+    }
+    .btn-new:hover { background: rgba(200,57,43,0.35); }
+
+    .sidebar-links { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-link {
+      color: rgba(255,255,255,0.3);
+      text-decoration: none; font-size: 11px;
+      letter-spacing: 0.05em;
+      transition: color 0.15s;
+    }
+    .sidebar-link:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── Main ── */
+    main {
+      padding: 40px 48px;
+      max-width: 960px;
+    }
+
+    .page-header {
+      margin-bottom: 36px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .page-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 28px; font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .page-header h2 span { font-style: italic; color: var(--ink2); }
+
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: var(--r);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; letter-spacing: 0.05em;
+      cursor: pointer; transition: all 0.15s;
+      border: none; text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--ink); color: #fff;
+    }
+    .btn-primary:hover { background: #2d2924; }
+    .btn-danger {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+    .btn-danger:hover { border-color: var(--accent); background: rgba(200,57,43,0.05); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink2);
+    }
+    .btn-outline:hover { border-color: var(--ink2); color: var(--ink); }
+    .btn-success {
+      background: var(--success); color: #fff;
+    }
+    .btn-ar {
+      background: var(--accent2); color: #fff;
+    }
+    .btn-ar:hover { background: #1d4ed8; }
+
+    /* Collection meta card */
+    .meta-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .meta-card .full { grid-column: 1/-1; }
+
+    .field-group label {
+      display: block; font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink2); margin-bottom: 6px;
+    }
+    .field-group input, .field-group textarea, .field-group select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--ink);
+      outline: none; transition: border-color 0.15s;
+      resize: vertical;
+    }
+    .field-group input:focus, .field-group textarea:focus {
+      border-color: var(--accent2);
+    }
+
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .toggle-row span { font-size: 11px; color: var(--ink2); }
+    .toggle {
+      position: relative; width: 40px; height: 22px;
+    }
+    .toggle input { opacity:0; width:0; height:0; }
+    .slider {
+      position: absolute; inset: 0;
+      background: var(--border); border-radius: 100px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .slider::after {
+      content:''; position:absolute;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; top: 3px; left: 3px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .slider { background: var(--success); }
+    .toggle input:checked + .slider::after { transform: translateX(18px); }
+
+    /* Stickers grid */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-header h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 16px; font-weight: 300;
+    }
+
+    .stickers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .sticker-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .sticker-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); transform: translateY(-1px); }
+
+    .sticker-preview {
+      width: 100%; aspect-ratio: 1;
+      background: #ede8df;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .sticker-preview img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+    .sticker-preview .no-img {
+      font-size: 10px; color: var(--ink2);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .sticker-preview .img-overlay {
+      position: absolute; bottom: 6px; right: 6px;
+      display: flex; gap: 4px;
+    }
+    .img-btn {
+      width: 26px; height: 26px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      border: none; border-radius: 6px;
+      cursor: pointer; color: #fff;
+      font-size: 11px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .sticker-body { padding: 14px 16px; }
+    .sticker-name-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sticker-name {
+      background: none; border: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--ink);
+      width: 100%; outline: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 2px;
+      transition: border-color 0.15s;
+    }
+    .sticker-name:focus { border-color: var(--accent2); }
+
+    .type-tag {
+      font-size: 9px; padding: 3px 8px;
+      border-radius: 100px; letter-spacing: 0.08em;
+      text-transform: uppercase; white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .type-tag.print { background: rgba(124,58,237,0.1); color: var(--tag-print); }
+    .type-tag.marcapaginas { background: rgba(3,105,161,0.1); color: var(--tag-marca); }
+    .type-tag.sticker { background: rgba(200,57,43,0.1); color: var(--tag-sticker); }
+
+    .sticker-fields { display: flex; flex-direction: column; gap: 6px; }
+    .mini-field label {
+      font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink2);
+      display: block; margin-bottom: 3px;
+    }
+    .mini-field select, .mini-field input[type=number] {
+      width: 100%; padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px; font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--ink);
+      background: var(--bg); outline: none;
+    }
+
+    .sticker-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end;
+    }
+    .del-btn {
+      background: none; border: none;
+      color: var(--ink2); font-size: 11px;
+      cursor: pointer; padding: 4px 8px;
+      border-radius: 6px; transition: all 0.15s;
+      font-family: 'DM Mono', monospace;
+    }
+    .del-btn:hover { background: rgba(200,57,43,0.08); color: var(--accent); }
+
+    /* JSON export area */
+    .json-panel {
+      background: var(--ink);
+      border-radius: var(--r);
+      padding: 24px;
+      margin-top: 32px;
+    }
+    .json-panel label {
+      font-size: 10px; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      display: block; margin-bottom: 12px;
+    }
+    .json-panel textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; color: #a8d8a8;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; line-height: 1.7;
+      padding: 16px; resize: vertical;
+      min-height: 220px; outline: none;
+    }
+    .json-actions {
+      display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: var(--ink); color: #fff;
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 12px; letter-spacing: 0.05em;
+      transform: translateY(20px); opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--ink2);
+    }
+    .empty-state p { margin-bottom: 16px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      aside {
+        position: relative; height: auto;
+        flex-direction: row; flex-wrap: wrap;
+        padding: 20px;
+      }
+      .sidebar-links { display: none; }
+      main { padding: 24px 20px; }
+      .meta-card { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <h1>AR Stickers<br><em style="font-size:11px;opacity:0.5;font-style:italic">Admin</em></h1>
+    </div>
+
+    <div class="sidebar-section">
+      <label>Colecciones</label>
+      <div class="col-list" id="col-list"></div>
+    </div>
+
+    <button class="btn-new" onclick="addCollection()">
+      <span>＋</span> Nueva colección
+    </button>
+
+    <div class="sidebar-links">
+      <a class="sidebar-link" href="../" target="_blank">↗ Ver sitio principal</a>
+      <a class="sidebar-link" href="https://github.com" target="_blank">↗ GitHub repo</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main-content">
+    <div class="empty-state">
+      <p>Selecciona o crea una colección para comenzar</p>
+      <button class="btn btn-primary" onclick="addCollection()">＋ Nueva colección</button>
+    </div>
+  </main>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── State ───────────────────────────────────────────
+  let config = { colecciones: [] };
+  let activeColId = null;
+
+  // ── Init ────────────────────────────────────────────
+  async function init() {
+    try {
+      const res = await fetch('../collections.json');
+      config = await res.json();
+    } catch(e) {
+      config = { colecciones: [] };
+    }
+    renderSidebar();
+    if (config.colecciones.length > 0) {
+      selectCollection(config.colecciones[0].id);
+    }
+  }
+
+  // ── Sidebar ─────────────────────────────────────────
+  function renderSidebar() {
+    const list = document.getElementById('col-list');
+    list.innerHTML = '';
+    config.colecciones.forEach(col => {
+      const div = document.createElement('div');
+      div.className = 'col-item' + (col.id === activeColId ? ' active' : '');
+      div.innerHTML = `
+        <span>${col.nombre}</span>
+        <span class="badge">${(col.stickers||[]).length}</span>
+      `;
+      div.onclick = () => selectCollection(col.id);
+      list.appendChild(div);
+    });
+  }
+
+  function selectCollection(id) {
+    activeColId = id;
+    renderSidebar();
+    renderMain();
+  }
+
+  // ── Main panel ──────────────────────────────────────
+  function renderMain() {
+    const col = config.colecciones.find(c => c.id === activeColId);
+    if (!col) return;
+
+    const arUrl = `../ar/index.html?c=${col.id}`;
+
+    document.getElementById('main-content').innerHTML = `
+      <div class="page-header">
+        <h2>${col.nombre}<br><span>/ gestión de stickers</span></h2>
+        <div class="header-actions">
+          <a class="btn btn-ar" href="${arUrl}" target="_blank">▶ Probar AR</a>
+          <button class="btn btn-primary" onclick="exportJSON()">↓ Exportar JSON</button>
+          <button class="btn btn-danger" onclick="deleteCollection('${col.id}')">Eliminar colección</button>
+        </div>
+      </div>
+
+      <!-- Meta -->
+      <div class="meta-card">
+        <div class="field-group">
+          <label>ID de colección</label>
+          <input type="text" value="${col.id}" onchange="updateColField('id', this.value)" placeholder="ej: primavera-2025" />
+        </div>
+        <div class="field-group">
+          <label>Nombre</label>
+          <input type="text" value="${col.nombre}" onchange="updateColField('nombre', this.value)" placeholder="Nombre visible" />
+        </div>
+        <div class="field-group full">
+          <label>Descripción</label>
+          <input type="text" value="${col.descripcion||''}" onchange="updateColField('descripcion', this.value)" placeholder="Descripción breve" />
+        </div>
+        <div class="field-group">
+          <label>Archivo .mind (targets)</label>
+          <input type="text" value="${col.mindFile||'assets/collections/'+col.id+'/targets.mind'}"
+            onchange="updateColField('mindFile', this.value)"
+            placeholder="ruta al archivo .mind" />
+        </div>
+        <div class="field-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+          <div class="toggle-row" style="width:100%;">
+            <span>Colección activa</span>
+            <label class="toggle">
+              <input type="checkbox" ${col.activa ? 'checked' : ''} onchange="updateColField('activa', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stickers -->
+      <div class="section-header">
+        <h3>Stickers (${(col.stickers||[]).length})</h3>
+        <button class="btn btn-outline" onclick="addSticker()">＋ Agregar sticker</button>
+      </div>
+
+      <div class="stickers-grid" id="stickers-grid">
+        ${(col.stickers||[]).map((s,i) => renderStickerCard(s,i)).join('')}
+      </div>
+
+      <!-- Info targets.mind -->
+      <div style="background:rgba(37,99,184,0.06);border:1px solid rgba(37,99,184,0.15);border-radius:10px;padding:18px 22px;margin-bottom:28px;">
+        <p style="font-size:11px;color:#2563b8;letter-spacing:0.04em;line-height:1.7;">
+          <strong>⚙ Cómo compilar el archivo .mind:</strong><br>
+          Ve a <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile" target="_blank" style="color:#2563b8;">MindAR Compiler</a>,
+          sube las imágenes de tus stickers en el <strong>mismo orden</strong> que aparecen aquí,
+          descarga el archivo <code>targets.mind</code> y súbelo a
+          <code>assets/collections/${col.id}/targets.mind</code> en tu repositorio.
+        </p>
+      </div>
+
+      <!-- JSON panel -->
+      <div class="json-panel">
+        <label>JSON generado — copia esto a collections.json</label>
+        <textarea id="json-output" readonly>${JSON.stringify(config, null, 2)}</textarea>
+        <div class="json-actions">
+          <button class="btn btn-success" onclick="copyJSON()">⎘ Copiar JSON</button>
+          <button class="btn btn-outline" style="color:#aaa;border-color:#333;" onclick="downloadJSON()">↓ Descargar JSON</button>
+        </div>
+      </div>
+    `;
+    updateJSONOutput();
+  }
+
+  // ── Sticker card HTML ────────────────────────────────
+  function renderStickerCard(s, i) {
+    const types = ['sticker','marcapaginas','print'];
+    return `
+      <div class="sticker-card" id="card-${s.id}">
+        <div class="sticker-preview">
+          ${s.animacion
+            ? `<img src="../${s.animacion}" alt="${s.nombre}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            : ''
+          }
+          <div class="no-img" style="${s.animacion ? 'display:none' : ''}">Sin GIF</div>
+          <div class="img-overlay">
+            <button class="img-btn" title="Cambiar GIF" onclick="promptGIF('${s.id}')">🎞</button>
+            <button class="img-btn" title="Cambiar marcador" onclick="promptMarker('${s.id}')">🎯</button>
+          </div>
+        </div>
+        <div class="sticker-body">
+          <div class="sticker-name-row">
+            <input class="sticker-name" type="text" value="${s.nombre}"
+              onchange="updateSticker('${s.id}','nombre',this.value)"
+              placeholder="Nombre del sticker" />
+            <span class="type-tag ${s.tipo}">${s.tipo}</span>
+          </div>
+          <div class="sticker-fields">
+            <div class="mini-field">
+              <label>Tipo</label>
+              <select onchange="updateSticker('${s.id}','tipo',this.value)">
+                ${types.map(t=>`<option value="${t}" ${t===s.tipo?'selected':''}>${t}</option>`).join('')}
+              </select>
+            </div>
+            <div class="mini-field">
+              <label>Escala</label>
+              <input type="number" value="${s.escala||1}" step="0.1" min="0.1" max="5"
+                onchange="updateSticker('${s.id}','escala',parseFloat(this.value))" />
+            </div>
+            <div class="mini-field">
+              <label>Índice target (.mind)</label>
+              <input type="number" value="${s.targetIndex !== undefined ? s.targetIndex : i}" min="0"
+                onchange="updateSticker('${s.id}','targetIndex',parseInt(this.value))" />
+            </div>
+          </div>
+        </div>
+        <div class="sticker-footer">
+          <button class="del-btn" onclick="deleteSticker('${s.id}')">× eliminar</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── CRUD helpers ─────────────────────────────────────
+  function getCol() {
+    return config.colecciones.find(c => c.id === activeColId);
+  }
+
+  function updateColField(field, value) {
+    const col = getCol();
+    if (!col) return;
+    col[field] = value;
+    if (field === 'id') {
+      activeColId = value;
+      renderSidebar();
+    }
+    updateJSONOutput();
+    toast('Actualizado');
+  }
+
+  function updateSticker(id, field, value) {
+    const col = getCol();
+    const s = col.stickers.find(s => s.id === id);
+    if (!s) return;
+    s[field] = value;
+    if (field === 'tipo') {
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        const tag = card.querySelector('.type-tag');
+        tag.className = `type-tag ${value}`;
+        tag.textContent = value;
+      }
+    }
+    updateJSONOutput();
+  }
+
+  function addCollection() {
+    const id = 'coleccion-' + Date.now();
+    config.colecciones.push({
+      id, nombre: 'Nueva Colección', descripcion: '', activa: true, stickers: []
+    });
+    renderSidebar();
+    selectCollection(id);
+    toast('Colección creada');
+  }
+
+  function deleteCollection(id) {
+    if (!confirm('¿Eliminar esta colección?')) return;
+    config.colecciones = config.colecciones.filter(c => c.id !== id);
+    activeColId = config.colecciones[0]?.id || null;
+    renderSidebar();
+    if (activeColId) renderMain();
+    else document.getElementById('main-content').innerHTML = '<div class="empty-state"><p>Sin colecciones</p><button class="btn btn-primary" onclick="addCollection()">＋ Nueva</button></div>';
+    toast('Colección eliminada');
+  }
+
+  function addSticker() {
+    const col = getCol();
+    const id = 'sticker-' + Date.now();
+    const idx = (col.stickers||[]).length;
+    col.stickers = col.stickers || [];
+    col.stickers.push({
+      id, nombre: `Sticker ${idx+1}`,
+      tipo: 'sticker',
+      imagen_marcador: `assets/collections/${col.id}/marcadores/${id}.jpg`,
+      animacion: `assets/collections/${col.id}/gifs/${id}.gif`,
+      escala: 1.0,
+      targetIndex: idx
+    });
+    updateJSONOutput();
+    const grid = document.getElementById('stickers-grid');
+    if (grid) {
+      const div = document.createElement('div');
+      div.innerHTML = renderStickerCard(col.stickers[col.stickers.length-1], idx);
+      grid.appendChild(div.firstElementChild);
+    }
+    toast('Sticker agregado');
+  }
+
+  function deleteSticker(id) {
+    const col = getCol();
+    col.stickers = col.stickers.filter(s => s.id !== id);
+    const card = document.getElementById(`card-${id}`);
+    if (card) card.remove();
+    updateJSONOutput();
+    toast('Sticker eliminado');
+  }
+
+  // ── Prompt paths ─────────────────────────────────────
+  function promptGIF(id) {
+    const col = getCol();
+    const s = col.stickers.find(s => s.id === id);
+    const val = prompt('Ruta al GIF (relativa a la raíz del repo):', s.animacion || '');
+    if (val === null) return;
+    updateSticker(id, 'animacion', val);
+    const card = document.getElementById(`card-${id}`);
+    if (card) {
+      const img = card.querySelector('.sticker-preview img');
+      if (img) { img.src = `../${val}`; img.style.display=''; }
+    }
+    toast('GIF actualizado');
+  }
+
+  function promptMarker(id) {
+    const col = getCol();
+    const s = col.stickers.find(s => s.id === id);
+    const val = prompt('Ruta a la imagen marcadora (relativa a la raíz del repo):', s.imagen_marcador || '');
+    if (val === null) return;
+    updateSticker(id, 'imagen_marcador', val);
+    toast('Marcador actualizado');
+  }
+
+  // ── JSON ─────────────────────────────────────────────
+  function updateJSONOutput() {
+    const el = document.getElementById('json-output');
+    if (el) el.value = JSON.stringify(config, null, 2);
+    renderSidebar();
+  }
+
+  function copyJSON() {
+    const text = JSON.stringify(config, null, 2);
+    navigator.clipboard.writeText(text).then(() => toast('JSON copiado al portapapeles ✓'));
+  }
+
+  function downloadJSON() {
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'collections.json';
+    a.click();
+    toast('Descargando collections.json…');
+  }
+
+  function exportJSON() { copyJSON(); }
+
+  // ── Toast ─────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  init();
+</script>
+</body>
+</html>
