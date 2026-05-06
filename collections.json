@@ -5,6 +5,7 @@
       "nombre": "Frieren",
       "descripcion": "Coleccion Frieren",
       "activa": true,
+      "mindFile": "assets/collections/frieren1/targets.mind",
       "stickers": [
         {
           "id": "sticker-1778031851302",
