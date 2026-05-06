@@ -5,45 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>AR Stickers</title>
-
-  <!-- Orden correcto y URLs correctas -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
 
     #loading {
       position: fixed; inset: 0; z-index: 9999;
       background: #0d0d0d;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 24px;
+      align-items: center; justify-content: center; gap: 20px;
     }
     #loading.hidden { display: none; }
     .ring {
-      width: 56px; height: 56px;
+      width: 52px; height: 52px;
       border: 2px solid rgba(255,255,255,0.1);
       border-top-color: #ff3d2e; border-radius: 50%;
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #loading p { color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; }
-
-    #error {
-      display: none; position: fixed; inset: 0; z-index: 9999;
-      background: #0d0d0d; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px; padding: 40px; text-align: center;
-    }
-    #error.show { display: flex; }
-    #error h2 { color: #ff3d2e; font-size: 20px; font-weight: 500; }
-    #error p { color: rgba(255,255,255,0.45); font-size: 13px; line-height: 1.6; max-width: 280px; }
-    #error button {
-      margin-top: 8px; padding: 10px 24px;
-      background: #ff3d2e; border: none; border-radius: 8px;
-      color: #fff; font-size: 12px; cursor: pointer;
-    }
+    #loading p { color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
 
     #ui {
       position: fixed; inset: 0; z-index: 100;
@@ -52,11 +34,7 @@
       padding: 28px 20px 40px;
     }
     .top { display: flex; align-items: center; justify-content: space-between; }
-    .live-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #ff3d2e; box-shadow: 0 0 10px #ff3d2e;
-      animation: blink 2s ease-in-out infinite;
-    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3d2e; box-shadow: 0 0 10px #ff3d2e; animation: blink 2s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .badge {
       background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
@@ -65,34 +43,27 @@
       letter-spacing: 0.1em; text-transform: uppercase;
       padding: 6px 14px; border-radius: 100px;
     }
-    .crosshair {
+    .frame {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       width: min(240px, 60vw); aspect-ratio: 1;
     }
-    .ch { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.5); border-style: solid; }
-    .tl { top:0;left:0; border-width:2px 0 0 2px; }
-    .tr { top:0;right:0; border-width:2px 2px 0 0; }
-    .bl { bottom:0;left:0; border-width:0 0 2px 2px; }
-    .br { bottom:0;right:0; border-width:0 2px 2px 0; }
-    .hint {
-      position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
-      color: rgba(255,255,255,0.35); font-size: 10px;
-      letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
-    }
+    .c { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.5); border-style: solid; }
+    .tl{top:0;left:0;border-width:2px 0 0 2px} .tr{top:0;right:0;border-width:2px 2px 0 0}
+    .bl{bottom:0;left:0;border-width:0 0 2px 2px} .br{bottom:0;right:0;border-width:0 2px 2px 0}
+    .hint { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
     .bottom { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; }
 
-    #found {
-      position: fixed; bottom: 100px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
+    #toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
       z-index: 200; pointer-events: none;
-      background: rgba(0,0,0,0.75); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #fff; font-size: 12px; letter-spacing: 0.08em;
-      padding: 12px 24px; border-radius: 100px;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 12px; padding: 10px 22px; border-radius: 100px;
       opacity: 0; transition: opacity 0.3s, transform 0.3s;
     }
-    #found.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     a-scene { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
   </style>
@@ -101,117 +72,123 @@
 
 <div id="loading"><div class="ring"></div><p>Iniciando cámara…</p></div>
 
-<div id="error">
-  <h2>Algo salió mal</h2>
-  <p id="error-msg">No se pudo iniciar la cámara AR.</p>
-  <button onclick="location.reload()">Reintentar</button>
-</div>
-
 <div id="ui">
   <div class="top">
-    <div class="live-dot"></div>
-    <div class="badge" id="col-badge">AR</div>
+    <div class="dot"></div>
+    <div class="badge" id="badge">AR</div>
   </div>
-  <div class="crosshair">
-    <div class="ch tl"></div><div class="ch tr"></div>
-    <div class="ch bl"></div><div class="ch br"></div>
+  <div class="frame">
+    <div class="c tl"></div><div class="c tr"></div>
+    <div class="c bl"></div><div class="c br"></div>
     <div class="hint">Apunta al sticker</div>
   </div>
   <div class="bottom">Mantén el sticker visible</div>
 </div>
 
-<div id="found"></div>
-<div id="scene-container"></div>
+<div id="toast"></div>
+
+<!-- 
+  ESCENA ESTÁTICA — MindAR necesita que esto exista en el HTML desde el inicio.
+  Los GIFs y el .mind se configuran dinámicamente vía JS antes de que A-Frame arranque.
+-->
+<a-scene
+  id="ar-scene"
+  mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+  color-space="sRGB"
+  renderer="colorManagement: true"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
+  <a-assets id="a-assets" timeout="30000"></a-assets>
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+</a-scene>
 
 <script>
 const params = new URLSearchParams(location.search);
 const colId = params.get('c');
-let foundTimer;
+let toastTimer;
 
-function showError(msg) {
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('error-msg').textContent = msg;
-  document.getElementById('error').classList.add('show');
-}
-
-function showFound(name) {
-  const el = document.getElementById('found');
-  el.textContent = '✦ ' + (name || 'Sticker detectado');
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
   el.classList.add('show');
-  clearTimeout(foundTimer);
-  foundTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-async function start() {
+async function setup() {
+  // 1. Cargar config
   let config;
   try {
     const res = await fetch('../collections.json');
     config = await res.json();
   } catch(e) {
-    showError('No se pudo cargar la configuración.');
+    document.getElementById('loading').innerHTML = '<p style="color:#ff3d2e;padding:40px;text-align:center">No se pudo cargar collections.json</p>';
     return;
   }
 
+  // 2. Encontrar colección
   const cols = config.colecciones.filter(c => c.activa);
   const col = colId ? cols.find(c => c.id === colId) : cols[0];
-  if (!col) { showError('Colección no encontrada.'); return; }
+  if (!col) {
+    document.getElementById('loading').innerHTML = '<p style="color:#ff3d2e;padding:40px;text-align:center">Colección no encontrada</p>';
+    return;
+  }
 
   const stickers = col.stickers || [];
-  if (stickers.length === 0) { showError('Esta colección no tiene stickers.'); return; }
+  document.getElementById('badge').textContent = col.nombre;
 
-  document.getElementById('col-badge').textContent = col.nombre;
-
-  const mindSrc = col.mindFile || `assets/collections/${col.id}/targets.mind`;
-
-  const assetsHTML = stickers.map((s, i) =>
-    `<img id="gif${i}" src="../${s.animacion}">`
-  ).join('\n');
-
-  const targetsHTML = stickers.map((s, i) => {
-    const idx = s.targetIndex !== undefined ? s.targetIndex : i;
-    return `<a-entity mindar-image-target="targetIndex: ${idx}">
-        <a-plane src="#gif${i}"
-          width="${s.escala || 1}" height="${s.escala || 1}"
-          position="0 0 0"
-          material="transparent: true; alphaTest: 0.05; side: double">
-        </a-plane>
-      </a-entity>`;
-  }).join('\n');
-
-  document.getElementById('scene-container').innerHTML = `
-    <a-scene
-      id="ar-scene"
-      mindar-image="imageTargetSrc: ../${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
-      color-space="sRGB"
-      renderer="colorManagement: true"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false">
-      <a-assets timeout="30000">
-        ${assetsHTML}
-      </a-assets>
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-      ${targetsHTML}
-    </a-scene>`;
-
+  // 3. Actualizar src del .mind ANTES de que A-Frame procese la escena
+  const mindSrc = col.mindFile || `../assets/collections/${col.id}/targets.mind`;
   const scene = document.getElementById('ar-scene');
+  scene.setAttribute('mindar-image', 
+    `imageTargetSrc: ${mindSrc}; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;`
+  );
 
+  // 4. Agregar assets (GIFs)
+  const assetsEl = document.getElementById('a-assets');
+  stickers.forEach((s, i) => {
+    const img = document.createElement('img');
+    img.id = `gif${i}`;
+    img.src = `../${s.animacion}`;
+    img.crossOrigin = 'anonymous';
+    assetsEl.appendChild(img);
+  });
+
+  // 5. Agregar targets a la escena
+  stickers.forEach((s, i) => {
+    const idx = s.targetIndex !== undefined ? s.targetIndex : i;
+
+    const entity = document.createElement('a-entity');
+    entity.setAttribute('mindar-image-target', `targetIndex: ${idx}`);
+
+    const plane = document.createElement('a-plane');
+    plane.setAttribute('src', `#gif${i}`);
+    plane.setAttribute('width', s.escala || 1);
+    plane.setAttribute('height', s.escala || 1);
+    plane.setAttribute('position', '0 0 0');
+    plane.setAttribute('material', 'transparent: true; alphaTest: 0.05; side: double');
+
+    entity.appendChild(plane);
+    entity.addEventListener('targetFound', () => toast('✦ ' + s.nombre));
+    scene.appendChild(entity);
+  });
+
+  // 6. Escuchar cuando AR esté listo
   scene.addEventListener('arReady', () => {
     document.getElementById('loading').classList.add('hidden');
-    const targets = scene.querySelectorAll('[mindar-image-target]');
-    targets.forEach((t, i) => {
-      const name = stickers[i] ? stickers[i].nombre : '';
-      t.addEventListener('targetFound', () => showFound(name));
-    });
   });
 
   scene.addEventListener('arError', () => {
-    showError('No se pudo acceder a la cámara. Verifica los permisos e intenta de nuevo.');
+    document.getElementById('loading').innerHTML = 
+      '<p style="color:#ff3d2e;padding:40px;text-align:center;line-height:1.6">No se pudo acceder a la cámara.<br>Verifica los permisos y recarga.</p>';
   });
 
+  // Fallback
   setTimeout(() => document.getElementById('loading').classList.add('hidden'), 15000);
 }
 
-start();
+// Esperar a que A-Frame esté disponible antes de modificar la escena
+window.addEventListener('load', setup);
 </script>
 </body>
 </html>
