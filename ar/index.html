@@ -4,8 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>AR Stickers</title>
+
+  <!-- Orden correcto y URLs correctas -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
@@ -38,8 +42,7 @@
     #error button {
       margin-top: 8px; padding: 10px 24px;
       background: #ff3d2e; border: none; border-radius: 8px;
-      color: #fff; font-size: 12px; letter-spacing: 0.1em;
-      text-transform: uppercase; cursor: pointer;
+      color: #fff; font-size: 12px; cursor: pointer;
     }
 
     #ui {
@@ -57,7 +60,6 @@
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .badge {
       background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.12);
       color: rgba(255,255,255,0.7); font-size: 11px;
       letter-spacing: 0.1em; text-transform: uppercase;
@@ -85,7 +87,6 @@
       transform: translateX(-50%) translateY(20px);
       z-index: 200; pointer-events: none;
       background: rgba(0,0,0,0.75); backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,0.12);
       color: #fff; font-size: 12px; letter-spacing: 0.08em;
       padding: 12px 24px; border-radius: 100px;
@@ -141,26 +142,7 @@ function showFound(name) {
   foundTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
 async function start() {
-  // 1. Load scripts first
-  try {
-    await loadScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image.prod.js');
-    await loadScript('https://aframe.io/releases/1.4.2/aframe.min.js');
-    await loadScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js');
-  } catch(e) {
-    showError('No se pudieron cargar las librerías AR. Verifica tu conexión a internet.');
-    return;
-  }
-
-  // 2. Load config
   let config;
   try {
     const res = await fetch('../collections.json');
@@ -170,7 +152,6 @@ async function start() {
     return;
   }
 
-  // 3. Find collection
   const cols = config.colecciones.filter(c => c.activa);
   const col = colId ? cols.find(c => c.id === colId) : cols[0];
   if (!col) { showError('Colección no encontrada.'); return; }
@@ -182,18 +163,16 @@ async function start() {
 
   const mindSrc = col.mindFile || `assets/collections/${col.id}/targets.mind`;
 
-  // 4. Build scene HTML
   const assetsHTML = stickers.map((s, i) =>
     `<img id="gif${i}" src="../${s.animacion}">`
-  ).join('\n        ');
+  ).join('\n');
 
   const targetsHTML = stickers.map((s, i) => {
     const idx = s.targetIndex !== undefined ? s.targetIndex : i;
-    return `
-      <a-entity mindar-image-target="targetIndex: ${idx}">
+    return `<a-entity mindar-image-target="targetIndex: ${idx}">
         <a-plane src="#gif${i}"
           width="${s.escala || 1}" height="${s.escala || 1}"
-          position="0 0 0" rotation="0 0 0"
+          position="0 0 0"
           material="transparent: true; alphaTest: 0.05; side: double">
         </a-plane>
       </a-entity>`;
@@ -214,20 +193,15 @@ async function start() {
       ${targetsHTML}
     </a-scene>`;
 
-  // 5. Listen for events
   const scene = document.getElementById('ar-scene');
 
   scene.addEventListener('arReady', () => {
     document.getElementById('loading').classList.add('hidden');
-
-    // Attach target events
     stickers.forEach((s, i) => {
       const idx = s.targetIndex !== undefined ? s.targetIndex : i;
-      const targets = scene.querySelectorAll('[mindar-image-target]');
-      targets.forEach(t => {
+      scene.querySelectorAll('[mindar-image-target]').forEach(t => {
         const attr = t.getAttribute('mindar-image-target') || '';
-        const tIdx = parseInt(attr.replace('targetIndex:', '').trim());
-        if (tIdx === idx) {
+        if (parseInt(attr.replace('targetIndex:', '').trim()) === idx) {
           t.addEventListener('targetFound', () => showFound(s.nombre));
         }
       });
@@ -238,7 +212,6 @@ async function start() {
     showError('No se pudo acceder a la cámara. Verifica los permisos e intenta de nuevo.');
   });
 
-  // Fallback hide loading after 15s
   setTimeout(() => document.getElementById('loading').classList.add('hidden'), 15000);
 }
 
